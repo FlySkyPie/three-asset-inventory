@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo</title>
+  <style>
+    .loading-view {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-content {
+      width: 600px;
+      height: 80px;
+    }
+
+    .loading-content>.progressDiv {
+      width: 100%;
+      height: 30px;
+      background: #34495ecc;
+    }
+
+    .loading-content>.progressDiv>.progress {
+      width: 0%;
+      height: 30px;
+      background: #2c3e50;
+    }
+
+    .loading-content>h2 {
+      font-family: sans-serif;
+      color: #2c3e50;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loading-view">
+    <div class="loading-content">
+      <div class="progressDiv">
+        <div class="progress"></div>
+      </div>
+      <h2>0%</h2>
+    </div>
+  </div>
+
+  <div id="app"></div>
+  <script type="module" src="/example/main.ts"></script>
+</body>
+
+</html>
