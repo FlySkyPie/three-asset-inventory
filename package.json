@@ -1,11 +1,12 @@
 {
-  "name": "three-asset-inventory",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@flyskypie/three-asset-inventory",
+  "version": "0.1.0",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build && tsc -p tsconfig.prod.json ",
+    "preview": "vite preview",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@types/three": "^0.139.0",
@@ -15,5 +16,29 @@
   },
   "peerDependencies": {
     "three": "^0.139.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlySkyPie/three-asset-inventory.git"
+  },
+  "files": [
+    "LICENSE",
+    "package.json",
+    "README.md",
+    "dist"
+  ],
+  "main": "./dist/lib.umd.js",
+  "module": "./dist/lib.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/lib.es.js",
+      "require": "./dist/lib.umd.js"
+    }
+  },
+  "keywords": [
+    "three",
+    "preload",
+    "assets",
+    "loader"
+  ]
 }
