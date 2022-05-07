@@ -1,6 +1,6 @@
 {
   "name": "@flyskypie/three-asset-inventory",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -29,6 +29,7 @@
   ],
   "main": "./dist/lib.umd.js",
   "module": "./dist/lib.es.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/lib.es.js",
