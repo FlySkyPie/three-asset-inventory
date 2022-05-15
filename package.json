@@ -41,5 +41,6 @@
     "preload",
     "assets",
     "loader"
-  ]
+  ],
+  "dependencies": {}
 }

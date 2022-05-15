@@ -1,4 +1,7 @@
+import { Texture } from 'three';
+
 import { useTextureLoader, LoadTextureResult } from './loader';
+import { getDefaultTexture } from './untils';
 
 export type LoadEvent = {
     key: string;
@@ -14,7 +17,7 @@ type EventName = 'progress' | 'complete';
 
 class AssetInventory {
     isLoading: boolean = false;
-    private textures: Map<string, any> = new Map();
+    private textures: Map<string, Texture> = new Map();
     private textureTasks: Map<string, string> = new Map();
     private onProgressHanders: OnProgressHandler[] = [];
     private onCompelteHanders: OnCompleteedHandler[] = [];
@@ -54,6 +57,20 @@ class AssetInventory {
             return;
         }
         this.textureTasks.set(key, path);
+    }
+
+    private getTexture = (key: string) => {
+        const texture = this.textures.get(key);
+        if (texture !== undefined) {
+            return texture;
+        }
+        return getDefaultTexture();
+    }
+
+    public get resource() {
+        return {
+            getTexture: this.getTexture,
+        }
     }
 
     /**
