@@ -1,7 +1,7 @@
-import { Texture } from 'three';
+import PromisePool from '@supercharge/promise-pool';
 
-import { useTextureLoader, LoadTextureResult } from './loader';
-import { getDefaultTexture } from './untils';
+import { useTextureLoader } from './loader';
+import { TextureInventory } from './inventory/TextureInventory';
 
 export type LoadEvent = {
     key: string;
@@ -17,8 +17,8 @@ type EventName = 'progress' | 'complete';
 
 class AssetInventory {
     isLoading: boolean = false;
-    private textures: Map<string, Texture> = new Map();
-    private textureTasks: Map<string, string> = new Map();
+
+    private texture: TextureInventory = new TextureInventory();
     private onProgressHanders: OnProgressHandler[] = [];
     private onCompelteHanders: OnCompleteedHandler[] = [];
 
@@ -38,38 +38,18 @@ class AssetInventory {
      * Add asstes.
      */
     public get add() {
-        return {
-            texture: this.addTexture,
-        }
-    }
-
-    private addTexture = (key: string, path: string) => {
         if (this.isLoading) {
             console.error('The inventory is busy.');
             return;
         }
-        if (this.textureTasks.has(key)) {
-            console.warn('The key of resource already in the queue.');
-            return;
+        return {
+            texture: this.texture.addTask,
         }
-        if (this.textures.has(key)) {
-            console.warn('The key of resource already been load.');
-            return;
-        }
-        this.textureTasks.set(key, path);
-    }
-
-    private getTexture = (key: string) => {
-        const texture = this.textures.get(key);
-        if (texture !== undefined) {
-            return texture;
-        }
-        return getDefaultTexture();
     }
 
     public get resource() {
         return {
-            getTexture: this.getTexture,
+            getTexture: this.texture.getAsset,
         }
     }
 
@@ -83,48 +63,42 @@ class AssetInventory {
         }
     }
 
-    private startLoad = () => {
+    private startLoad = async () => {
+        if (this.isLoading) {
+            return;
+        }
+
         this.isLoading = true;
-        const countRef = { value: 0 };
 
-        const textureTasks =
-            Array.from(this.textureTasks.entries())
-                .map(([key, path]) => ({ key, path }));
+        const textureTasks = this.texture.getTasks();
 
-        const total = textureTasks.length;
+        const tasks = [...textureTasks];
+        const total = tasks.length;
 
-        const handlecomplete = () => {
-            if (countRef.value === total) {
-                this.isLoading = false;
-                this.onCompelteHanders.forEach(callback => callback());
-            }
-        }
+        const { loadTexture } = useTextureLoader();
 
-        const handleLoadTexture = (result: LoadTextureResult) => {
-            this.textureTasks.delete(result.key);
-            countRef.value++;
+        await PromisePool
+            .for(tasks)
+            .onTaskFinished((item, pool) => {
+                this.onProgressHanders.forEach((callback) => callback({
+                    key: item.key, path: item.path, total, progress: pool.processedCount(),
+                }))
 
-            if (result.texture === undefined) {
-                handlecomplete();
-                return;
-            }
-            const { key, path, texture } = result;
-            this.textures.set(key, texture);
-
-            this.onProgressHanders.forEach((callback) => callback({
-                key, path, total, progress: countRef.value,
-            }))
-
-            handlecomplete();
-        }
-
-        const { load: loadTexutres } = useTextureLoader({
-            tasks: textureTasks,
-            onLoad: handleLoadTexture,
-        });
-
-
-        loadTexutres();
+                if (pool.processedPercentage() === 100) {
+                    this.isLoading = false;
+                    this.onCompelteHanders.forEach(callback => callback());
+                }
+            })
+            .process(async (task) => {
+                if (task.type === 'texture') {
+                    const result = await loadTexture(task.path);
+                    if (result !== undefined) {
+                        this.texture.addAsset(task.key, result);
+                    } else {
+                        console.error(`Error while loading texture of ${task.key} (${task.path}).`);
+                    }
+                }
+            })
     }
 }
 

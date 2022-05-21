@@ -42,5 +42,7 @@
     "assets",
     "loader"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "@supercharge/promise-pool": "^2.2.0"
+  }
 }
